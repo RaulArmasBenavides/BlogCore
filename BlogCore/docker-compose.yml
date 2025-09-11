@@ -14,7 +14,7 @@ services:
       MSSQL_SA_PASSWORD: "P@ssw0rd?"
       ACCEPT_EULA: "Y"
     ports:
-      - "1433:1433"
+      - "11433:1433"
     networks:
       - backend
     volumes:
@@ -22,12 +22,12 @@ services:
   blogcore:
     image: ${DOCKER_REGISTRY-}blogcore
     build:
-      context: .\BlogCore
+      context: .        
       dockerfile: Dockerfile
     ports:
       - "8000:80"
     environment:
-     ConnectionStrings__ConexionSQL: Server=db;Database=CONSULTORIO2;User Id=sa;Password=P@ssw0rd?;Encrypt=False
+      ConnectionStrings__ConexionSQL: "Server=db,1433;Database=CONSULTORIO2;User Id=sa;Password=P@ssw0rd?;Encrypt=False"
     depends_on:
       - db
     networks:

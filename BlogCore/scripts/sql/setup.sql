@@ -1,19 +1,32 @@
-USE [master]
+USE master;
 GO
 
--- Terminate all existing connections to the database
-ALTER DATABASE [CONSULTORIO2] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-GO
+IF DB_ID(N'CONSULTORIO2') IS NULL
+BEGIN
+    DECLARE @bak NVARCHAR(4000) = N'/usr/src/app/CONSULTORIO2.bak';
+    -- Detecta nombres lógicos del .bak (data y log)
+    IF OBJECT_ID('tempdb..#fl') IS NOT NULL DROP TABLE #fl;
+    CREATE TABLE #fl
+    (
+        LogicalName sysname,
+        PhysicalName NVARCHAR(4000),
+        [Type] CHAR(1),
+        FileGroupName sysname NULL,
+        Size BIGINT,
+        MaxSize BIGINT,
+        FileId INT
+    );
 
--- Restore the database from the .bak file
-RESTORE DATABASE [CONSULTORIO2]
-FROM DISK = N'/usr/src/app/CONSULTORIO2.bak'
-WITH FILE = 1, 
-MOVE N'LogicalName_Data' TO N'/var/opt/mssql/data/CONSULTORIO2.mdf',
-MOVE N'LogicalName_Log' TO N'/var/opt/mssql/data/CONSULTORIO2_log.ldf',
-NOUNLOAD, REPLACE, STATS = 5;
-GO
+    INSERT INTO #fl (LogicalName, PhysicalName, [Type], FileGroupName, Size, MaxSize, FileId)
+    EXEC('RESTORE FILELISTONLY FROM DISK = ''' + @bak + '''');
 
--- Set the database back to multi-user mode
-ALTER DATABASE [CONSULTORIO2] SET MULTI_USER;
+    DECLARE @ld sysname = (SELECT TOP 1 LogicalName FROM #fl WHERE [Type]='D' ORDER BY FileId);
+    DECLARE @ll sysname = (SELECT TOP 1 LogicalName FROM #fl WHERE [Type]='L' ORDER BY FileId);
+
+    RESTORE DATABASE [CONSULTORIO2]
+      FROM DISK = @bak
+      WITH MOVE @ld TO N'/var/opt/mssql/data/CONSULTORIO2.mdf',
+           MOVE @ll TO N'/var/opt/mssql/data/CONSULTORIO2_log.ldf',
+           REPLACE, STATS = 5;
+END
 GO
