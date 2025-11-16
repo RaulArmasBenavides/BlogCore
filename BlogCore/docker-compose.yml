@@ -21,7 +21,7 @@ services:
     image: ${DOCKER_REGISTRY-}blogcore
     build:
       context: .        
-      dockerfile: Dockerfile
+      dockerfile: BlogCore/Dockerfile
     ports:
       - "8000:80"
     environment:
