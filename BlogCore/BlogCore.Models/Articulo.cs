@@ -21,7 +21,7 @@ namespace BlogCore.Models
         public string Descripcion { get; set; }
 
         [Display(Name = "Fecha de Creación")]
-        public string FechaCreacion { get; set; }
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
         
         [DataType(DataType.ImageUrl)]

@@ -49,10 +49,26 @@ namespace BlogCore.Areas.Admin.Controllers
                 var archivos = HttpContext.Request.Form.Files;
                 if (artiVM.Articulo.Id == 0)
                 {
+                    if (archivos.Count() == 0)
+                    {
+                        ModelState.AddModelError("", "Debe seleccionar una imagen");
+                        artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+                        return View(artiVM);
+                    }
+
+                    var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                    var extension = Path.GetExtension(archivos[0].FileName).ToLower();
+
+                    if (!extensionesPermitidas.Contains(extension))
+                    {
+                        ModelState.AddModelError("", "Solo se permiten imágenes: JPG, JPEG, PNG, GIF");
+                        artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+                        return View(artiVM);
+                    }
+
                     //Nuevo artículo
                     string nombreArchivo = Guid.NewGuid().ToString();
                     var subidas = Path.Combine(rutaPrincipal, @"imagenes\articulos");
-                    var extension = Path.GetExtension(archivos[0].FileName);
 
                     using (var fileStreams = new FileStream(Path.Combine(subidas, nombreArchivo + extension), FileMode.Create))
                     {
@@ -60,8 +76,7 @@ namespace BlogCore.Areas.Admin.Controllers
                     }
 
                     artiVM.Articulo.UrlImagen = @"\imagenes\articulos\" + nombreArchivo + extension;
-                    artiVM.Articulo.FechaCreacion = DateTime.Now.ToString();
-                    
+
                     _contenedorTrabajo.Articulo.Add(artiVM.Articulo);
                     _contenedorTrabajo.Save();
 
@@ -105,14 +120,21 @@ namespace BlogCore.Areas.Admin.Controllers
 
                 var articuloDesdeDb = _contenedorTrabajo.Articulo.Get(artiVM.Articulo.Id);
 
-
                 if (archivos.Count() > 0)
                 {
+                    var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                    var extension = Path.GetExtension(archivos[0].FileName).ToLower();
+
+                    if (!extensionesPermitidas.Contains(extension))
+                    {
+                        ModelState.AddModelError("", "Solo se permiten imágenes: JPG, JPEG, PNG, GIF");
+                        artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+                        return View(artiVM);
+                    }
+
                     //Nueva imagen para el artículo
                     string nombreArchivo = Guid.NewGuid().ToString();
                     var subidas = Path.Combine(rutaPrincipal, @"imagenes\articulos");
-                    var extension = Path.GetExtension(archivos[0].FileName);
-                    var nuevaExtension = Path.GetExtension(archivos[0].FileName);
 
                     var rutaImagen = Path.Combine(rutaPrincipal, articuloDesdeDb.UrlImagen.TrimStart('\\'));
 
@@ -128,7 +150,6 @@ namespace BlogCore.Areas.Admin.Controllers
                     }
 
                     artiVM.Articulo.UrlImagen = @"\imagenes\articulos\" + nombreArchivo + extension;
-                    artiVM.Articulo.FechaCreacion = DateTime.Now.ToString();
 
                     _contenedorTrabajo.Articulo.Update(artiVM.Articulo);
                     _contenedorTrabajo.Save();
@@ -145,7 +166,8 @@ namespace BlogCore.Areas.Admin.Controllers
                 _contenedorTrabajo.Save();
                 return RedirectToAction(nameof(Index));
             }
-            
+
+            artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
             return View(artiVM);
         }
 
