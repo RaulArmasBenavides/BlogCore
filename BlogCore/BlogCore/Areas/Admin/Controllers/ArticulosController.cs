@@ -27,13 +27,13 @@ namespace BlogCore.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
 
             ArticuloVM artivm = new ArticuloVM()
             {
                 Articulo = new BlogCore.Models.Articulo(),
-                ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias()
+                ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync()
             };
 
             return View(artivm);
@@ -41,7 +41,7 @@ namespace BlogCore.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ArticuloVM artiVM)
+        public async Task<IActionResult> Create(ArticuloVM artiVM)
         {
             if (ModelState.IsValid)
             {
@@ -52,7 +52,7 @@ namespace BlogCore.Areas.Admin.Controllers
                     if (archivos.Count() == 0)
                     {
                         ModelState.AddModelError("", "Debe seleccionar una imagen");
-                        artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+                        artiVM.ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync();
                         return View(artiVM);
                     }
 
@@ -62,7 +62,7 @@ namespace BlogCore.Areas.Admin.Controllers
                     if (!extensionesPermitidas.Contains(extension))
                     {
                         ModelState.AddModelError("", "Solo se permiten imágenes: JPG, JPEG, PNG, GIF");
-                        artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+                        artiVM.ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync();
                         return View(artiVM);
                     }
 
@@ -77,31 +77,31 @@ namespace BlogCore.Areas.Admin.Controllers
 
                     artiVM.Articulo.UrlImagen = @"\imagenes\articulos\" + nombreArchivo + extension;
 
-                    _contenedorTrabajo.Articulo.Add(artiVM.Articulo);
-                    _contenedorTrabajo.Save();
+                    await _contenedorTrabajo.Articulo.AddAsync(artiVM.Articulo);
+                    await _contenedorTrabajo.SaveAsync();
 
                     return RedirectToAction(nameof(Index));
                 }
             }
 
-            artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+            artiVM.ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync();
             return View(artiVM);
         }
 
 
 
         [HttpGet]
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             ArticuloVM artivm = new ArticuloVM()
             {
                 Articulo = new BlogCore.Models.Articulo(),
-                ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias()
+                ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync()
             };
 
             if (id != null)
             {
-                artivm.Articulo = _contenedorTrabajo.Articulo.Get(id.GetValueOrDefault());
+                artivm.Articulo = await _contenedorTrabajo.Articulo.GetAsync(id.GetValueOrDefault());
             }
 
             return View(artivm);
@@ -111,14 +111,14 @@ namespace BlogCore.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ArticuloVM artiVM)
+        public async Task<IActionResult> Edit(ArticuloVM artiVM)
         {
             if (ModelState.IsValid)
             {
                 string rutaPrincipal = _hostingEnvironment.WebRootPath;
                 var archivos = HttpContext.Request.Form.Files;
 
-                var articuloDesdeDb = _contenedorTrabajo.Articulo.Get(artiVM.Articulo.Id);
+                var articuloDesdeDb = await _contenedorTrabajo.Articulo.GetAsync(artiVM.Articulo.Id);
 
                 if (archivos.Count() > 0)
                 {
@@ -128,7 +128,7 @@ namespace BlogCore.Areas.Admin.Controllers
                     if (!extensionesPermitidas.Contains(extension))
                     {
                         ModelState.AddModelError("", "Solo se permiten imágenes: JPG, JPEG, PNG, GIF");
-                        artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+                        artiVM.ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync();
                         return View(artiVM);
                     }
 
@@ -151,8 +151,8 @@ namespace BlogCore.Areas.Admin.Controllers
 
                     artiVM.Articulo.UrlImagen = @"\imagenes\articulos\" + nombreArchivo + extension;
 
-                    _contenedorTrabajo.Articulo.Update(artiVM.Articulo);
-                    _contenedorTrabajo.Save();
+                    await _contenedorTrabajo.Articulo.UpdateAsync(artiVM.Articulo);
+                    await _contenedorTrabajo.SaveAsync();
 
                     return RedirectToAction(nameof(Index));
                 }
@@ -162,12 +162,12 @@ namespace BlogCore.Areas.Admin.Controllers
                     artiVM.Articulo.UrlImagen = articuloDesdeDb.UrlImagen;
                 }
 
-                _contenedorTrabajo.Articulo.Update(artiVM.Articulo);
-                _contenedorTrabajo.Save();
+                await _contenedorTrabajo.Articulo.UpdateAsync(artiVM.Articulo);
+                await _contenedorTrabajo.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            artiVM.ListaCategorias = _contenedorTrabajo.Categoria.GetListaCategorias();
+            artiVM.ListaCategorias = await _contenedorTrabajo.Categoria.GetListaCategoriasAsync();
             return View(artiVM);
         }
 
@@ -176,16 +176,17 @@ namespace BlogCore.Areas.Admin.Controllers
 
         #region Llamadas a la API
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Json(new { data = _contenedorTrabajo.Articulo.GetAll(includeProperties: "Categoria") });
+            var data = await _contenedorTrabajo.Articulo.GetAllAsync(includeProperties: "Categoria");
+            return Json(new { data = data });
         }
 
         [HttpDelete]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
 
-            var articuloDesdeDb = _contenedorTrabajo.Articulo.Get(id);
+            var articuloDesdeDb = await _contenedorTrabajo.Articulo.GetAsync(id);
             string rutaDirectorioPrincipal = _hostingEnvironment.WebRootPath;
             var rutaImagen = Path.Combine(rutaDirectorioPrincipal, articuloDesdeDb.UrlImagen.TrimStart('\\'));
 
@@ -197,10 +198,10 @@ namespace BlogCore.Areas.Admin.Controllers
             if (articuloDesdeDb == null)
             {
                 return Json(new { success = false, message = "Error borrando artículo" });
-            }            
+            }
 
-            _contenedorTrabajo.Articulo.Remove(articuloDesdeDb);
-            _contenedorTrabajo.Save();
+            await _contenedorTrabajo.Articulo.RemoveAsync(articuloDesdeDb);
+            await _contenedorTrabajo.SaveAsync();
             return Json(new { success = true, message = "Artículo borrado correctamente" });
         }
 

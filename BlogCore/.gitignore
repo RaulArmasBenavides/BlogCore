@@ -1,0 +1,27 @@
+# User Secrets
+secrets.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options
+.vs/
+
+# Build results
+bin/
+obj/
+
+# .NET diagnostic files
+*.trx
+
+# Local database backup
+sql_data/

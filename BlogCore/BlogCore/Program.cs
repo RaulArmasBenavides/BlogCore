@@ -3,6 +3,7 @@ using BlogCore.AccesoDatos.Data.Repository.IRepository;
 using BlogCore.Data;
 using BlogCore.Extensions;
 using BlogCore.Models;
+using BlogCore.Models.Validators;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

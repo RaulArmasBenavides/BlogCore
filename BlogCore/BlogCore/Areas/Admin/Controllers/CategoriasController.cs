@@ -27,50 +27,47 @@ namespace BlogCore.Areas.Admin.Controllers
             return View();
         }
 
-        //[AllowAnonymous]
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Categoria categoria)
+        public async Task<IActionResult> Create(Categoria categoria)
         {
             if (ModelState.IsValid)
             {
-                _contenedorTrabajo.Categoria.Add(categoria);
-                _contenedorTrabajo.Save();
+                await _contenedorTrabajo.Categoria.AddAsync(categoria);
+                await _contenedorTrabajo.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
 
             return View(categoria);
         }
 
-        [HttpGet]        
-        public IActionResult Edit(int id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
             Categoria categoria = new Categoria();
-            categoria = _contenedorTrabajo.Categoria.Get(id);
+            categoria = await _contenedorTrabajo.Categoria.GetAsync(id);
             if (categoria == null)
             {
                 return NotFound();
             }
-            
+
             return View(categoria);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Categoria categoria)
+        public async Task<IActionResult> Edit(Categoria categoria)
         {
             if (ModelState.IsValid)
             {
-                _contenedorTrabajo.Categoria.Update(categoria);
-                _contenedorTrabajo.Save();
+                await _contenedorTrabajo.Categoria.UpdateAsync(categoria);
+                await _contenedorTrabajo.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
 
@@ -82,24 +79,23 @@ namespace BlogCore.Areas.Admin.Controllers
 
         #region Llamadas a la API
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            //Opción 1
-            return Json(new {data = _contenedorTrabajo.Categoria.GetAll()});
+            var data = await _contenedorTrabajo.Categoria.GetAllAsync();
+            return Json(new { data = data });
         }
 
-
         [HttpDelete]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var objFromDb = _contenedorTrabajo.Categoria.Get(id);
+            var objFromDb = await _contenedorTrabajo.Categoria.GetAsync(id);
             if (objFromDb == null)
             {
                 return Json(new { success = false, message = "Error borrando categoría" });
             }
 
-            _contenedorTrabajo.Categoria.Remove(objFromDb);
-            _contenedorTrabajo.Save();
+            await _contenedorTrabajo.Categoria.RemoveAsync(objFromDb);
+            await _contenedorTrabajo.SaveAsync();
             return Json(new { success = true, message = "Categoría borrada correctamente" });
         }
         #endregion

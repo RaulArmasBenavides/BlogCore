@@ -35,44 +35,41 @@ namespace BlogCore.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Slider slider)
+        public async Task<IActionResult> Create(Slider slider)
         {
             if (ModelState.IsValid)
             {
                 string rutaPrincipal = _hostingEnvironment.WebRootPath;
                 var archivos = HttpContext.Request.Form.Files;
 
-                
-                    //Nuevo slider
-                    string nombreArchivo = Guid.NewGuid().ToString();
-                    var subidas = Path.Combine(rutaPrincipal, @"imagenes\sliders");
-                    var extension = Path.GetExtension(archivos[0].FileName);
+                //Nuevo slider
+                string nombreArchivo = Guid.NewGuid().ToString();
+                var subidas = Path.Combine(rutaPrincipal, @"imagenes\sliders");
+                var extension = Path.GetExtension(archivos[0].FileName);
 
-                    using (var fileStreams = new FileStream(Path.Combine(subidas, nombreArchivo + extension), FileMode.Create))
-                    {
-                        archivos[0].CopyTo(fileStreams);
-                    }
+                using (var fileStreams = new FileStream(Path.Combine(subidas, nombreArchivo + extension), FileMode.Create))
+                {
+                    archivos[0].CopyTo(fileStreams);
+                }
 
-                    slider.UrlImagen = @"\imagenes\sliders\" + nombreArchivo + extension;
-                   
-                    
-                    _contenedorTrabajo.Slider.Add(slider);
-                    _contenedorTrabajo.Save();
+                slider.UrlImagen = @"\imagenes\sliders\" + nombreArchivo + extension;
 
-                    return RedirectToAction(nameof(Index));
-               
-            }            
+                await _contenedorTrabajo.Slider.AddAsync(slider);
+                await _contenedorTrabajo.SaveAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
             return View();
         }
 
 
 
         [HttpGet]
-        public IActionResult Edit(int? id)
-        {         
+        public async Task<IActionResult> Edit(int? id)
+        {
             if (id != null)
             {
-                var slider = _contenedorTrabajo.Slider.Get(id.GetValueOrDefault());
+                var slider = await _contenedorTrabajo.Slider.GetAsync(id.GetValueOrDefault());
                 return View(slider);
             }
 
@@ -83,15 +80,14 @@ namespace BlogCore.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Slider slider)
+        public async Task<IActionResult> Edit(Slider slider)
         {
             if (ModelState.IsValid)
             {
                 string rutaPrincipal = _hostingEnvironment.WebRootPath;
                 var archivos = HttpContext.Request.Form.Files;
 
-                var sliderDesdeDb = _contenedorTrabajo.Slider.Get(slider.Id);
-
+                var sliderDesdeDb = await _contenedorTrabajo.Slider.GetAsync(slider.Id);
 
                 if (archivos.Count() > 0)
                 {
@@ -99,7 +95,6 @@ namespace BlogCore.Areas.Admin.Controllers
                     string nombreArchivo = Guid.NewGuid().ToString();
                     var subidas = Path.Combine(rutaPrincipal, @"imagenes\sliders");
                     var extension = Path.GetExtension(archivos[0].FileName);
-                    var nuevaExtension = Path.GetExtension(archivos[0].FileName);
 
                     var rutaImagen = Path.Combine(rutaPrincipal, sliderDesdeDb.UrlImagen.TrimStart('\\'));
 
@@ -115,10 +110,9 @@ namespace BlogCore.Areas.Admin.Controllers
                     }
 
                     slider.UrlImagen = @"\imagenes\sliders\" + nombreArchivo + extension;
-                   
 
-                    _contenedorTrabajo.Slider.Update(slider);
-                    _contenedorTrabajo.Save();
+                    await _contenedorTrabajo.Slider.UpdateAsync(slider);
+                    await _contenedorTrabajo.SaveAsync();
 
                     return RedirectToAction(nameof(Index));
                 }
@@ -128,12 +122,12 @@ namespace BlogCore.Areas.Admin.Controllers
                     slider.UrlImagen = sliderDesdeDb.UrlImagen;
                 }
 
-                _contenedorTrabajo.Slider.Update(slider);
-                _contenedorTrabajo.Save();
+                await _contenedorTrabajo.Slider.UpdateAsync(slider);
+                await _contenedorTrabajo.SaveAsync();
 
                 return RedirectToAction(nameof(Index));
             }
-            
+
             return View();
         }
 
@@ -142,28 +136,26 @@ namespace BlogCore.Areas.Admin.Controllers
 
         #region Llamadas a la API
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Json(new { data = _contenedorTrabajo.Slider.GetAll() });
+            var data = await _contenedorTrabajo.Slider.GetAllAsync();
+            return Json(new { data = data });
         }
 
         [HttpDelete]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-
-            var sliderDesdeDb = _contenedorTrabajo.Slider.Get(id);
-           
+            var sliderDesdeDb = await _contenedorTrabajo.Slider.GetAsync(id);
 
             if (sliderDesdeDb == null)
             {
                 return Json(new { success = false, message = "Error borrando slider" });
-            }            
+            }
 
-            _contenedorTrabajo.Slider.Remove(sliderDesdeDb);
-            _contenedorTrabajo.Save();
+            await _contenedorTrabajo.Slider.RemoveAsync(sliderDesdeDb);
+            await _contenedorTrabajo.SaveAsync();
             return Json(new { success = true, message = "Slider borrado correctamente" });
         }
-
 
         #endregion
 

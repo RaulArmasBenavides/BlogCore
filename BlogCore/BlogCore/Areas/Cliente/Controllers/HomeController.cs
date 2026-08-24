@@ -15,24 +15,25 @@ namespace BlogCore.Areas.Cliente.Controllers
             _contenedorTrabajo = contenedorTrabajo;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var sliders = await _contenedorTrabajo.Slider.GetAllAsync();
+            var articulos = await _contenedorTrabajo.Articulo.GetAllAsync();
+
             HomeVM homeVm = new HomeVM()
             {
-                Slider = _contenedorTrabajo.Slider.GetAll(),
-                ListaArticulos = _contenedorTrabajo.Articulo.GetAll()
+                Slider = sliders,
+                ListaArticulos = articulos
             };
 
-            //Esta línea es para poder saber si estamos en el home o no
             ViewBag.IsHome = true;
 
             return View(homeVm);
         }
 
-
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var articuloDesdeDb = _contenedorTrabajo.Articulo.Get(id);
+            var articuloDesdeDb = await _contenedorTrabajo.Articulo.GetAsync(id);
             return View(articuloDesdeDb);
         }
 

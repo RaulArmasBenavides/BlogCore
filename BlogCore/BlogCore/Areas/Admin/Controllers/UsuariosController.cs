@@ -19,36 +19,35 @@ namespace BlogCore.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            //Opción 1: Obtener todos los usuarios
-            //return View(_contenedorTrabajo.Usuario.GetAll());
-
-            //Opción 2: Obtener todos los usuarios menos el que esté logueado, para no bloquearse el mismo
             var claimsIdentity = (ClaimsIdentity)this.User.Identity;
             var usuarioActual = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            return View(_contenedorTrabajo.Usuario.GetAll(u => u.Id != usuarioActual.Value));
+            var usuarios = await _contenedorTrabajo.Usuario.GetAllAsync(u => u.Id != usuarioActual.Value);
+            return View(usuarios);
         }
 
         [HttpGet]
-        public IActionResult Bloquear(string id)
+        public async Task<IActionResult> Bloquear(string id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            _contenedorTrabajo.Usuario.BloquearUsuario(id);
+            await _contenedorTrabajo.Usuario.BloquearUsuarioAsync(id);
+            await _contenedorTrabajo.SaveAsync();
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
-        public IActionResult Desbloquear(string id)
+        public async Task<IActionResult> Desbloquear(string id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            _contenedorTrabajo.Usuario.DesbloquearUsuario(id);
+            await _contenedorTrabajo.Usuario.DesbloquearUsuarioAsync(id);
+            await _contenedorTrabajo.SaveAsync();
             return RedirectToAction(nameof(Index));
         }
     }

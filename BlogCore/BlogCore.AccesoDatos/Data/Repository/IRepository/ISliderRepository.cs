@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BlogCore.AccesoDatos.Data.Repository.IRepository
 {
     public interface ISliderRepository : IRepository<Slider>
-    {      
-        void Update(Slider slider);
+    {
+        Task UpdateAsync(Slider slider);
     }
 }

@@ -20,12 +20,13 @@ services:
   blogcore:
     image: ${DOCKER_REGISTRY-}blogcore
     build:
-      context: .        
+      context: .
       dockerfile: BlogCore/Dockerfile
     ports:
       - "8000:80"
     environment:
-      ConnectionStrings__ConexionSQL: "Server=db,1433;Database=CONSULTORIO2;User Id=sa;Password=P@ssw0rd?;Encrypt=False"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__ConexionSQL: "${SQL_CONNECTION_STRING:-Server=db,1433;Database=CONSULTORIO2;User Id=sa;Password=P@ssw0rd?;Encrypt=False}"
     depends_on:
       - db
     networks:

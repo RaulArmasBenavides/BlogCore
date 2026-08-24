@@ -22,17 +22,17 @@ namespace BlogCore.AccesoDatos.Data.Repository
         }
 
 
-        public void Add(T entity)
+        public async Task AddAsync(T entity)
         {
-            dbSet.Add(entity);
+            await dbSet.AddAsync(entity);
         }
 
-        public T Get(int id)
+        public async Task<T> GetAsync(int id)
         {
-            return dbSet.Find(id);
+            return await dbSet.FindAsync(id);
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null)
         {
             IQueryable<T> query = dbSet;
 
@@ -41,7 +41,6 @@ namespace BlogCore.AccesoDatos.Data.Repository
                 query = query.Where(filter);
             }
 
-            //Include Properties separados por coma
             if (includeProperties != null)
             {
                 foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -52,13 +51,13 @@ namespace BlogCore.AccesoDatos.Data.Repository
 
             if (orderBy != null)
             {
-                return orderBy(query).ToList();
+                return await orderBy(query).ToListAsync();
             }
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
-        public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null, string includeProperties = null)
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null)
         {
             IQueryable<T> query = dbSet;
 
@@ -67,7 +66,6 @@ namespace BlogCore.AccesoDatos.Data.Repository
                 query = query.Where(filter);
             }
 
-            //Include Properties separados por coma
             if (includeProperties != null)
             {
                 foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
@@ -76,17 +74,22 @@ namespace BlogCore.AccesoDatos.Data.Repository
                 }
             }
 
-            return query.FirstOrDefault();
+            return await query.FirstOrDefaultAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
-            T entityToRemove = dbSet.Find(id);
+            T entityToRemove = await dbSet.FindAsync(id);
+            if (entityToRemove != null)
+            {
+                dbSet.Remove(entityToRemove);
+            }
         }
 
-        public void Remove(T entity)
+        public async Task RemoveAsync(T entity)
         {
             dbSet.Remove(entity);
+            await Task.CompletedTask;
         }
     }
 }

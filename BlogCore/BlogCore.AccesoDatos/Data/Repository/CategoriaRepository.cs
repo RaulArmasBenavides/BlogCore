@@ -2,6 +2,7 @@
 using BlogCore.Data;
 using BlogCore.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogCore.AccesoDatos.Data.Repository
 {
@@ -14,23 +15,24 @@ namespace BlogCore.AccesoDatos.Data.Repository
             _db = db;
         }
 
-        public IEnumerable<SelectListItem> GetListaCategorias()
+        public async Task<IEnumerable<SelectListItem>> GetListaCategoriasAsync()
         {
-            return _db.Categoria.Select(i => new SelectListItem()
+            return await _db.Categoria.Select(i => new SelectListItem()
                 {
                     Text = i.Nombre,
                     Value = i.Id.ToString()
                 }
-            );
+            ).ToListAsync();
         }
 
-        public void Update(Categoria categoria)
+        public async Task UpdateAsync(Categoria categoria)
         {
-            var objDesdeDb = _db.Categoria.FirstOrDefault(s => s.Id == categoria.Id);
-            objDesdeDb.Nombre = categoria.Nombre;
-            objDesdeDb.Orden = categoria.Orden;
-
-            _db.SaveChanges();
+            var objDesdeDb = await _db.Categoria.FirstOrDefaultAsync(s => s.Id == categoria.Id);
+            if (objDesdeDb != null)
+            {
+                objDesdeDb.Nombre = categoria.Nombre;
+                objDesdeDb.Orden = categoria.Orden;
+            }
         }
     }
 }

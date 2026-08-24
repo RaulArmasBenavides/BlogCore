@@ -1,6 +1,7 @@
 ﻿using BlogCore.AccesoDatos.Data.Repository.IRepository;
 using BlogCore.Data;
 using BlogCore.Models;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace BlogCore.AccesoDatos.Data.Repository
@@ -14,18 +15,22 @@ namespace BlogCore.AccesoDatos.Data.Repository
             _db = db;
         }
 
-        public void BloquearUsuario(string IdUsuario)
+        public async Task BloquearUsuarioAsync(string IdUsuario)
         {
-            var usuarioDesdeDb = _db.ApplicationUser.FirstOrDefault(u => u.Id == IdUsuario);
-            usuarioDesdeDb.LockoutEnd = DateTime.Now.AddYears(1000);
-            _db.SaveChanges();
+            var usuarioDesdeDb = await _db.ApplicationUser.FirstOrDefaultAsync(u => u.Id == IdUsuario);
+            if (usuarioDesdeDb != null)
+            {
+                usuarioDesdeDb.LockoutEnd = DateTime.Now.AddYears(1000);
+            }
         }
 
-        public void DesbloquearUsuario(string IdUsuario)
+        public async Task DesbloquearUsuarioAsync(string IdUsuario)
         {
-            var usuarioDesdeDb = _db.ApplicationUser.FirstOrDefault(u => u.Id == IdUsuario);
-            usuarioDesdeDb.LockoutEnd = DateTime.Now;
-            _db.SaveChanges();
+            var usuarioDesdeDb = await _db.ApplicationUser.FirstOrDefaultAsync(u => u.Id == IdUsuario);
+            if (usuarioDesdeDb != null)
+            {
+                usuarioDesdeDb.LockoutEnd = DateTime.Now;
+            }
         }
     }
 }

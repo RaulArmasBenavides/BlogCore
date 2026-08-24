@@ -6,8 +6,8 @@ namespace BlogCore.AccesoDatos.Data.Repository.IRepository
 {
     public interface ICategoriaRepository : IRepository<Categoria>
     {
-        IEnumerable<SelectListItem> GetListaCategorias();
+        Task<IEnumerable<SelectListItem>> GetListaCategoriasAsync();
 
-        void Update(Categoria categoria);
+        Task UpdateAsync(Categoria categoria);
     }
 }

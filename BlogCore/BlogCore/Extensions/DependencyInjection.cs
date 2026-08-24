@@ -10,8 +10,10 @@ namespace BlogCore.Extensions
         public static IServiceCollection AddPersistence(this IServiceCollection services,
          IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("ConexionSQL");
+
             services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("ConexionSQL"),
+            options.UseSqlServer(connectionString,
                   b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)),
                   ServiceLifetime.Scoped);
 

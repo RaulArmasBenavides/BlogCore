@@ -1,6 +1,7 @@
 ﻿using BlogCore.AccesoDatos.Data.Repository.IRepository;
 using BlogCore.Data;
 using BlogCore.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,17 +19,16 @@ namespace BlogCore.AccesoDatos.Data.Repository
         {
             _db = db;
         }
-       
 
-        public void Update(Slider slider)
+        public async Task UpdateAsync(Slider slider)
         {
-            var objDesdeDb = _db.Slider.FirstOrDefault(s => s.Id == slider.Id);
-            objDesdeDb.Nombre = slider.Nombre;
-            objDesdeDb.Estado = slider.Estado;
-            objDesdeDb.UrlImagen = slider.UrlImagen;            
-
-            _db.SaveChanges();
+            var objDesdeDb = await _db.Slider.FirstOrDefaultAsync(s => s.Id == slider.Id);
+            if (objDesdeDb != null)
+            {
+                objDesdeDb.Nombre = slider.Nombre;
+                objDesdeDb.Estado = slider.Estado;
+                objDesdeDb.UrlImagen = slider.UrlImagen;
+            }
         }
-
     }
 }
